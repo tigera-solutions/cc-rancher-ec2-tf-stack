@@ -1,3 +1,7 @@
+###############################################################################
+# Installation of the cert-manager and the Rancher Server
+###############################################################################
+
 # Install cert-manager helm chart
 resource "helm_release" "cert_manager" {
   depends_on = [

@@ -15,23 +15,27 @@ data "aws_ami" "ubuntu" {
   owners = ["679593333241"]
 }
 
-
-data "terraform_remote_state" "aws_infra" {
-    backend = "local"
-    
-    config = {
-        path = "${path.root}/../aws-infra/terraform.tfstate"
-    }
-}
-
-data "terraform_remote_state" "rancher-server" {
-    backend = "local"
-    
-    config = {
-        path = "${path.root}/../rancher-server/terraform.tfstate"
-    }
-}
+# Load the common module, with all the variables.
 
 module "common" {
   source = "../common"
 }
+
+# Import the output information from the aws_infra terraform deployment.
+data "terraform_remote_state" "aws_infra" {
+  backend = "local"
+
+  config = {
+    path = "${path.root}/../aws-infra/terraform.tfstate"
+  }
+}
+
+# Import the output information from the rancher-server terraform deployment.
+data "terraform_remote_state" "rancher-server" {
+  backend = "local"
+
+  config = {
+    path = "${path.root}/../rancher-server/terraform.tfstate"
+  }
+}
+

@@ -1,4 +1,6 @@
-## Providers
+###############################################################################
+# Providers
+###############################################################################
 
 terraform {
   required_providers {
@@ -27,15 +29,3 @@ provider "aws" {
     }
   }
 }
-
-# ## Variables
-
-# variable "aws_access_key_id" {
-#   type        = string
-#   description = "export TF_VAR_aws_access_key_id = <ACCESS_KEY>"
-# }
-
-# variable "aws_secret_access_key" {
-#   type        = string
-#   description = "export TF_VAR_aws_secret_access_key = <SECRET_KEY>"
-# }

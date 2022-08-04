@@ -1,4 +1,6 @@
+###############################################################################
 # Variables for AWS Infrastructure creation
+###############################################################################
 
 output "owner" {
   value = var.owner
@@ -46,6 +48,7 @@ output "aws_secret_access_key" {
 
 ###############################################################################
 # Variables for Rancher Installation
+###############################################################################
 
 output "rancher_kubernetes_version" {
   value = var.rancher_kubernetes_version
@@ -64,7 +67,8 @@ output "admin_password" {
 }
 
 ###############################################################################
-# Variables for Rancher Installation
+# Variables for RKE Installation
+###############################################################################
 
 output "workload_kubernetes_version" {
   value = var.workload_kubernetes_version
@@ -76,6 +80,7 @@ output "rancher_cluster_name" {
 
 ###############################################################################
 # Locals
+###############################################################################
 
 output "node_username" {
   value = local.node_username

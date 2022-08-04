@@ -1,5 +1,6 @@
 ###############################################################################
-# Network Infrastructure
+# Network Infrastructure for Rancher Server and the RKE Cluster
+###############################################################################
 
 # Define the VPC
 resource "aws_vpc" "vpc" {
@@ -65,7 +66,8 @@ resource "aws_security_group" "rancher_sg_allow_all" {
 }
 
 ###############################################################################
-# TLS Key
+# TLS Keys Creation
+###############################################################################
 
 resource "tls_private_key" "global_key" {
   algorithm = "RSA"
@@ -90,7 +92,8 @@ resource "aws_key_pair" "rancher_key_pair" {
 }
 
 ###############################################################################
-# EC2 Instance
+# EC2 Instance for the Rancher Server
+###############################################################################
 
 # AWS EC2 instance for creating a single node K3S cluster and installing the Rancher server
 resource "aws_instance" "rancher_server" {
@@ -126,8 +129,9 @@ resource "aws_instance" "rancher_server" {
   }
 }
 
-#######################################################################
+###############################################################################
 # Load Balancer Creation
+###############################################################################
 
 resource "aws_lb" "rancher_lb" {
   depends_on         = [aws_internet_gateway.internet_gateway]
@@ -177,8 +181,9 @@ resource "aws_lb_target_group_attachment" "rancher_tga" {
   target_id        = aws_instance.rancher_server.id
 }
 
-#######################################################################
+###############################################################################
 # Hosted Zone record and Certificate creation
+###############################################################################
 
 # Hosted Zone record Creation
 resource "aws_route53_record" "rancher_record" {
@@ -233,15 +238,15 @@ resource "aws_acm_certificate_validation" "certificate_validation" {
   validation_record_fqdns = [for record in aws_route53_record.certificate_record : record.fqdn]
 }
 
-########################
-# IAM role for the RKE Workloads 
-############
+###############################################################################
+# IAM role for the Rancher server to provision the RKE's service Loadbalancers
+###############################################################################
 
 resource "aws_iam_role" "iam-role" {
-  name                = "${module.common.prefix}-${module.common.domain_prefix}-role"
+  name               = "${module.common.prefix}-${module.common.domain_prefix}-role"
   assume_role_policy = data.aws_iam_policy_document.instance-assume-role-policy.json
 
-  managed_policy_arns = [ aws_iam_policy.cluster-policy.arn ]
+  managed_policy_arns = [aws_iam_policy.cluster-policy.arn]
 }
 
 resource "aws_iam_instance_profile" "iam-instance-profile" {
@@ -256,8 +261,8 @@ resource "aws_iam_policy" "cluster-policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        "Effect": "Allow",
-        "Action": [
+        "Effect" : "Allow",
+        "Action" : [
           "autoscaling:DescribeAutoScalingGroups",
           "autoscaling:DescribeLaunchConfigurations",
           "autoscaling:DescribeTags",
@@ -320,7 +325,7 @@ resource "aws_iam_policy" "cluster-policy" {
           "iam:CreateServiceLinkedRole",
           "kms:DescribeKey"
         ],
-        "Resource": "*"
+        "Resource" : "*"
       }
     ]
   })

@@ -1,3 +1,7 @@
+###############################################################################
+# K3s cluster installation for the Rancher Server 
+###############################################################################
+
 # K3s cluster installation
 resource "ssh_resource" "install_k3s" {
   host = data.terraform_remote_state.aws_infra.outputs.rancher_server_public_ip
@@ -8,7 +12,7 @@ resource "ssh_resource" "install_k3s" {
   private_key = data.terraform_remote_state.aws_infra.outputs.private_key
 }
 
-# Retrive the kubeconif yaml for the K3s cluster
+# Retrive the kubeconfig yaml for the K3s cluster
 resource "ssh_resource" "retrieve_config" {
   depends_on = [
     ssh_resource.install_k3s

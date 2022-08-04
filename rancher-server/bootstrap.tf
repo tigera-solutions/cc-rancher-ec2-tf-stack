@@ -1,3 +1,7 @@
+###############################################################################
+# Bootstrap process to change the admin password
+###############################################################################
+
 # Testing until the rancher pod is up and running
 resource "ssh_resource" "test_rancher" {
   depends_on = [
@@ -11,7 +15,8 @@ resource "ssh_resource" "test_rancher" {
   private_key = data.terraform_remote_state.aws_infra.outputs.private_key
 }
 
-# Initialize Rancher server
+
+# Boostrapping the admin user with a new password
 resource "rancher2_bootstrap" "admin" {
   depends_on = [
     ssh_resource.test_rancher

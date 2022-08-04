@@ -1,12 +1,14 @@
 ###############################################################################
 # Create a RKE Cluster
+###############################################################################
 
+# RKE Cluster
 resource "rancher2_cluster" "rke_cluster" {
-  name        = "${module.common.rancher_cluster_name}-master-cluster"
+  name                      = "${module.common.rancher_cluster_name}-master-cluster"
   enable_cluster_monitoring = false
   enable_cluster_alerting   = false
-  description = "RKE Cluster"
-  
+  description               = "RKE Cluster"
+
   rke_config {
     network {
       plugin = "calico"
@@ -14,7 +16,7 @@ resource "rancher2_cluster" "rke_cluster" {
 
     cloud_provider {
       name = "aws"
-        aws_cloud_provider {
+      aws_cloud_provider {
       }
     }
 
@@ -23,7 +25,7 @@ resource "rancher2_cluster" "rke_cluster" {
     }
 
     kubernetes_version = module.common.workload_kubernetes_version
-  }  
+  }
 }
 
 #Create a new rancher2 Node Template
@@ -41,31 +43,31 @@ resource "rancher2_cloud_credential" "cloud_credentials" {
   }
 }
 
-
+# Node template for the nodes in the cluster
 resource "rancher2_node_template" "rke_node_template" {
   name                = "${module.common.rancher_cluster_name}_node_template"
   description         = "EC2 RKE-node Template"
   cloud_credential_id = rancher2_cloud_credential.cloud_credentials.id
   engine_install_url  = "https://releases.rancher.com/install-docker/20.10.sh"
   amazonec2_config {
-    ami            = data.aws_ami.ubuntu.id
-    region         = module.common.aws_region
-    security_group = [ data.terraform_remote_state.aws_infra.outputs.aws_security_group ]
-    vpc_id         = data.terraform_remote_state.aws_infra.outputs.vpc_id
-    subnet_id      = data.terraform_remote_state.aws_infra.outputs.aws_subnet_id
-    zone           = module.common.aws_az
-    instance_type  = module.common.instance_type
+    ami                  = data.aws_ami.ubuntu.id
+    region               = module.common.aws_region
+    security_group       = [data.terraform_remote_state.aws_infra.outputs.aws_security_group]
+    vpc_id               = data.terraform_remote_state.aws_infra.outputs.vpc_id
+    subnet_id            = data.terraform_remote_state.aws_infra.outputs.aws_subnet_id
+    zone                 = module.common.aws_az
+    instance_type        = module.common.instance_type
     iam_instance_profile = data.terraform_remote_state.aws_infra.outputs.aws_iam_profile_name
-    ssh_user       = "ubuntu"
+    ssh_user             = "ubuntu"
   }
 }
 
-# Create a new rancher2 Node Pool
+# Create a the rancher2 master node
 resource "rancher2_node_pool" "rke_master" {
   depends_on       = [rancher2_node_template.rke_node_template]
   cluster_id       = rancher2_cluster.rke_cluster.id
   name             = "${module.common.rancher_cluster_name}-master"
-  hostname_prefix  = "${module.common.rancher_cluster_name}-master-"
+  hostname_prefix  = "${module.common.rancher_cluster_name}-master"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 1
   control_plane    = true
@@ -73,11 +75,12 @@ resource "rancher2_node_pool" "rke_master" {
   worker           = true
 }
 
+# Create a the rancher2 worker nodes
 resource "rancher2_node_pool" "rke_node" {
   depends_on       = [rancher2_node_pool.rke_master]
   cluster_id       = rancher2_cluster.rke_cluster.id
   name             = "${module.common.rancher_cluster_name}-node"
-  hostname_prefix  = "${module.common.rancher_cluster_name}-node-"
+  hostname_prefix  = "${module.common.rancher_cluster_name}-node"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 2
   control_plane    = false
@@ -85,6 +88,7 @@ resource "rancher2_node_pool" "rke_node" {
   worker           = true
 }
 
+# Glue the both nodes to the cluster
 resource "rancher2_cluster_sync" "sync_ec2" {
   cluster_id = rancher2_cluster.rke_cluster.id
   node_pool_ids = [

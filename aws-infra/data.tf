@@ -1,7 +1,6 @@
+# Load the common module, with all the variables.
 module "common" {
   source = "../common"
-  # aws_access_key_id     = var.aws_access_key_id
-  # aws_secret_access_key = var.aws_secret_access_key
 }
 
 # Use latest SLES 15 SP3
@@ -35,7 +34,6 @@ data "aws_route53_zone" "hosted_zone" {
   name         = "${module.common.hosted_zone}."
   private_zone = false
 }
-
 
 # Retrieve data for the IAM role - EC2 identifier
 data "aws_iam_policy_document" "instance-assume-role-policy" {
