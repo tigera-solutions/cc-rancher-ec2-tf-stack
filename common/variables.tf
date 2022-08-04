@@ -96,7 +96,7 @@ variable "workload_kubernetes_version" {
 
 variable "rancher_cluster_name" {
   type        = string
-  default     = "rancherke"
+  default     = "rke"
   description = "Prefix for the RKE cluster"
 }
 
