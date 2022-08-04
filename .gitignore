@@ -1,0 +1,8 @@
+.DS_Store
+*.tfstate
+/.terraform
+/microservices-demo
+*.hcl
+*.backup
+*.tfstate.*
+
