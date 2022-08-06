@@ -1,17 +1,48 @@
 ![ce-aks-tf](https://user-images.githubusercontent.com/104035488/175662346-237812d3-e248-43c8-9ac4-555b7c9fdc28.png)
 
-# Calico Enterprise Trial Environment on AKS using Terraform
+
 
 
 [![Tigera][tigera.io-badge]][tigera.io] [![Azure][azure-badge]][azure.link] [![Terraform][terraform-badge]][terraform.io]
 
 
-This repository was built to accelerate the process of creating a Calico Enterprise trial environment. It provides the steps to create an AKS (Azure Kubernetes Service) cluster, deploying the the [Calico Enterprise](https://docs.tigera.io/about/about-calico-enterprise) product, and the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as a example application, using Terraform.
+export now=$(date); terraform destroy -auto-approve; echo $now; date
+
+aws-infra - ~ 5min
+rancher-server - ~ 7min
+rke-cluster - ~ 9min
+export TF_VAR_aws_access_key_id=<aws_access_key_id>
+export TF_VAR_aws_secret_access_key=<aws_secret_access_key>
+
+
+
+
+online boutique - ~ 
+
+https://github.com/GoogleCloudPlatform/microservices-demo
+
+git clone https://github.com/GoogleCloudPlatform/microservices-demo.git
+cd microservices-demo
+kubectl apply -f ./release/kubernetes-manifests.yaml
+
+
+calico cloud - ~
+# Calico Cloud Trial Environment on Rancher using Terraform 
+
+This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial environment. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through the Rancher server on AWS using EC2 instances. Here you can also find the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application and connecting your cluster to Calico Cloud.
 
 ## The Terraform Code
 
-This section will guide you through the initial steps of setting up the needed environment for a Calico Enterprise demo using AKS.
-The Terraform code presented here will build the following infrastructure:
+This section will guide you through the initial steps of setting up the needed environment for a Calico Cloud demo using Rancher on AWS EC2 instances.
+The Terraform code presented here consists of a stack with 3 layers:
+ 
+- AWS Infrastructure
+- Rancher Server
+- RKE Cluster
+
+Each layer has the Terraform code for a specific task and is built on the previous layer. This layer segmentation will help if you want partially destroy the infrastructure later on. Th
+
+will build the following infrastructure:
 
 - Create a Resource Group in Azure
 - Create a AKS cluster with 3 nodes in the Resource Group
