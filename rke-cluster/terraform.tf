@@ -12,6 +12,10 @@ terraform {
       source  = "rancher/rancher2"
       version = "1.24.0"
     }
+    null = {
+      source  = "hashicorp/null"
+      version = "3.1.1"
+    }
   }
 }
 
