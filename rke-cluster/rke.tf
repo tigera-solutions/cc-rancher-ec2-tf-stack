@@ -66,8 +66,8 @@ resource "rancher2_node_template" "rke_node_template" {
 resource "rancher2_node_pool" "rke_master" {
   depends_on       = [rancher2_node_template.rke_node_template]
   cluster_id       = rancher2_cluster.rke_cluster.id
-  name             = "${module.common.rancher_cluster_name}-master"
-  hostname_prefix  = "${module.common.rancher_cluster_name}-master"
+  name             = "${module.common.prefix}-${module.common.rancher_cluster_name}-master"
+  hostname_prefix  = "${module.common.prefix}-${module.common.rancher_cluster_name}-master"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 1
   control_plane    = true
@@ -79,8 +79,8 @@ resource "rancher2_node_pool" "rke_master" {
 resource "rancher2_node_pool" "rke_node" {
   depends_on       = [rancher2_node_pool.rke_master]
   cluster_id       = rancher2_cluster.rke_cluster.id
-  name             = "${module.common.rancher_cluster_name}-node"
-  hostname_prefix  = "${module.common.rancher_cluster_name}-node"
+  name             = "${module.common.prefix}-${module.common.rancher_cluster_name}-node"
+  hostname_prefix  = "${module.common.prefix}-${module.common.rancher_cluster_name}-node"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 2
   control_plane    = false
