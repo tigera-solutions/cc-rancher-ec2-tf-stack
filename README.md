@@ -1,35 +1,5 @@
 ![ce-aks-tf](https://user-images.githubusercontent.com/104035488/175662346-237812d3-e248-43c8-9ac4-555b7c9fdc28.png)
 
-
-
-
-[![Tigera][tigera.io-badge]][tigera.io] [![AWS][aws-badge]][aws.link] [![Terraform][terraform-badge]][terraform.io]
-
-
-export now=$(date); terraform destroy -auto-approve; echo $now; date
-
-aws-infra - ~ 5min
-rancher-server - ~ 6min
-rke-cluster - ~ 9min
-export TF_VAR_aws_access_key_id=<aws_access_key_id>
-export TF_VAR_aws_secret_access_key=<aws_secret_access_key>
-
-
-online boutique - ~ 5min
-
-https://github.com/GoogleCloudPlatform/microservices-demo
-
-git clone https://github.com/GoogleCloudPlatform/microservices-demo.git
-cd microservices-demo
-kubectl apply -f ./release/kubernetes-manifests.yaml
-
-calico cloud - ~ 13 min
-
-
-total - ~ 35min
-
-
-
 # Calico Cloud Trial on Rancher using Terraform on AWS.
 
 This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through a Rancher server on AWS using EC2 instances. Also, you can find here the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application, and connecting your cluster to Calico Cloud.
