@@ -305,6 +305,7 @@ Perfect! Another layer deployed. Now you have the Rancher Server up and running.
 
 The username to log in is `admin` and the password is the one you speficied in the variable `admin_password` in the `variable.tf` file at the `common` folder.
 
+![ranche-server](https://user-images.githubusercontent.com/104035488/183494110-3947374f-3eaf-4ae0-9894-4fb1c76a9e7c.gif)
 
 Ok. Now the last layer, RKE cluster creation.
 
@@ -385,7 +386,8 @@ $
 Now you have the rke cluster installed and ready to connect to Calico Cloud. The terraform will also load the kubeconfig so you can kubectl to your cluster right away.
 Try the following:
 
-<rke cluster gif>
+![rke-cluster](https://user-images.githubusercontent.com/104035488/183494148-828fc696-da7c-4e97-b30a-c47c1fce6299.gif)
+
 
 ```sh
 kubectl get nodes
