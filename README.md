@@ -133,6 +133,8 @@ The following elements will be created on AWS for the Rancher server installatio
 - Certificate
 - IAM role and policy
 
+![aws-infra-rancher](https://user-images.githubusercontent.com/104035488/183460237-8ae29de1-3060-4f44-acd7-3c3c90ec2898.jpg)
+
 1. Change to the `aws-infra` folder.
 
 ```sh
