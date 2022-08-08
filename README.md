@@ -150,7 +150,6 @@ terraform init
 The output should be something like the bellow
 ```sh
 $ terraform init
-
 Initializing modules...
 - common in ../common
 
@@ -195,9 +194,9 @@ At the end, the outputs will be like:
 
 You don't need to remember them. They will be referred by the next modules.
 
+```sh
 Apply complete! Resources: 22 added, 0 changed, 0 destroyed.
 
-```sh
 Outputs:
 
 aws_iam_profile_name = "regis-rancher-profile"
@@ -228,7 +227,7 @@ For the next step, let's apply the Terraform code to build a Rancher server usin
 
 This piece of Terraform code will install a Kubernetes K3s cluster in the EC2  instance previously deployed and use Helm charts to install the Certificate Manager (https://artifacthub.io/packages/helm/cert-manager/cert-manager) and the Rancher server itself. The final step is to bootstrap the Rancher server, changing the admin password to the value of the variable `admin_password` speficied in the `variable.tf` file in the `common` folder.
 
-1. Change to the `aws-infra` folder.
+1. Change to the `rancher-server` folder.
 
 ```sh
 cd ../rancher-server
@@ -243,7 +242,6 @@ terraform init
 The output should be something like the bellow
 ```sh
 $ terraform init
-
 Initializing modules...
 - common in ../common
 
@@ -265,7 +263,7 @@ Initializing provider plugins...
 - Installed rancher/rancher2 v1.24.0 (signed by a HashiCorp partner, key ID 2EEB0F9AD44A135C)
 
 Partner and community providers are signed by their developers.
-If you'd like to know more about provider signing, you can read about it here:
+If you\'d like to know more about provider signing, you can read about it here:
 https://www.terraform.io/docs/cli/plugins/signing.html
 
 Terraform has created a lock file .terraform.lock.hcl to record the provider
@@ -285,172 +283,205 @@ commands will detect it and remind you to do so if necessary.
 $
 ```
 
-3. Once the Terrafor has being successfully initialized in the `aws-infra` directory, you can apply the Terraform code.
+3. Once the Terrafor has being successfully initialized in the `rancher-server` directory, you can apply the Terraform code.
 
 ```sh
 terraform apply -auto-approve
 ```
 
-Great! Now you just need to wait until Terraform finishes the infrastructure creation process. This process may take about 5 minutes, on average.
-At the end, the outputs will be like:
-
-You don't need to remember them. They will be referred by the next modules.
-
-Apply complete! Resources: 22 added, 0 changed, 0 destroyed.
+This apply will take tipically from 5 to 7 min to complete. At the end, you should be able to see a message similar to this:
 
 ```sh
-Outputs:
-
-aws_iam_profile_name = "regis-rancher-profile"
-aws_security_group = "regis-rancher-allow-all"
-aws_subnet_id = "subnet-035c3d2350d89c030"
-private_key = <sensitive>
-rancher_server_private_ip = "100.0.14.233"
-rancher_server_public_ip = "35.183.125.29"
-rancher_url = "rancher.tigera.rocks"
-vpc_id = "vpc-06e23cbacb3622e0d"
-
-$
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-5. During the creation process, once Terraform finishes to create the AKS cluster, you can use [k9s](https://k9scli.io/) to monitor the pods creation during the Calico Enterprise installation
-
-```sh
-k9s -A
-```
-![k9s](https://user-images.githubusercontent.com/104035488/175186117-58ea5073-3b3a-468e-9c8c-ea781f2cad10.gif)
-
-6. When the Terrafom has finished, the following output message will be displayed:
-
-```sh
-Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 7 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-calico_portal = "Environment information can be find at ../tigera-secrets/secrets.txt"
+admin_token = <sensitive>
+
 $
 ```
-A new file `secrets.txt` was created during the infrastructure creation. The `secrets.txt` file contains the information to access the Boutique Online application, the Calico Enterprise portal and the Kibana server.
+
+Perfect! Another layer deployed. Now you have the Rancher Server up and running. Test the access to your Rancher server using the following https address: http://<`domain_prefix`>.<`hosted-zone`>. In my case, https://rancher.tigera.rocks.
+
+The username to log in is `admin` and the password is the one you speficied in the variable `admin_password` in the `variable.tf` file at the `common` folder.
+
+
+Ok. Now the last layer, RKE cluster creation.
+
+### RKE Cluster (rke-cluster)
+
+This layer will use Terraform to provision a "Calico Cloud-ready" RKE cluster in Rancher, so Rancher will use AWS APIs to create EC2 instances for the nodes and install RKE on them. 
+
+1. Change to the `rke-cluster` folder.
 
 ```sh
-$ cat ../tigera-secrets/secrets.txt
-Online Boutique Portal:
-url: http://52.226.209.201/
+cd ../rke-cluster
+```
 
--------------------------------------------------
-Calico Portal:
-url: https://52.226.208.201:9443/
-token : eyJhbGciOiJSUzI1NiIsImtpZCI6InFsNEJ0dk5sZUFBdnAzdnJ0T2tYTnRRdHBFamdzQUthZjk4Z25XX0pwXzQifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZWZhdWx0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6InJlThisisnotarealtokenitsjustanexamplet9CwSojNc-7ah6Yvj7gAqHZ55pVSk8td7pKrdP9VpWJ9sZ2OiUpGCQ3UCIpATSnIk3zGeXK2jmaHEQzjdquOoJljfeJhgDLRHclwFiOHyR5Rv6P6XyWhSaWgALwcvbR5Dm_-I1RvUfTlkVQn3iEB4FtrZGPl9s5esY_rw58XjkZ6R5OvRCm1Y2npb7GpI1oCzmJ0CzuYUsCCupqHPN2XtrI6NYsAx3isHalnVZaLPsA9gCBW-NcmANhNG-a5pL_mZaivrjctFoA_RQOxA3G-LQeF9ZMf6Neod11ZIV9MQvfKFq_pk2UJuUAnhcfHTzZjFmZKq2-KczGbkvNi6Avcbjf238Fd-lsFD1-AWhY83zp2iqB7MDMNfc4nwC-qhZxBG5PAiO-QHJ-dFuTbwcqmXL7p47oxA5xzar9-bW77r_a_8WivFAkEg5G2B-HBqiHHlLhU9-YFybr9whNKI3S0U23xNrglNlycUeaQDIYhDGD5Zh4c
+2. Lets now initiate the Terraform in the `rke-cluster` directory.
 
--------------------------------------------------
-kibana
-username: elastic
-password: 3Qpr460XFaKEqQEf5v0cGZ2w
+```sh
+terraform init
+```
+
+The output should be something like the bellow:
+```sh
+$ terraform init
+Initializing modules...
+- common in ../common
+
+Initializing the backend...
+
+Initializing provider plugins...
+- terraform.io/builtin/terraform is built in to Terraform
+- Finding rancher/rancher2 versions matching "1.24.0"...
+- Finding hashicorp/null versions matching "3.1.1"...
+- Finding hashicorp/aws versions matching "4.18.0"...
+- Finding latest version of hashicorp/local...
+- Installing rancher/rancher2 v1.24.0...
+- Installed rancher/rancher2 v1.24.0 (signed by a HashiCorp partner, key ID 2EEB0F9AD44A135C)
+- Installing hashicorp/null v3.1.1...
+- Installed hashicorp/null v3.1.1 (signed by HashiCorp)
+- Installing hashicorp/aws v4.18.0...
+- Installed hashicorp/aws v4.18.0 (signed by HashiCorp)
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+
+Partner and community providers are signed by their developers.
+If you\'d like to know more about provider signing, you can read about it here:
+https://www.terraform.io/docs/cli/plugins/signing.html
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+
 $
 ```
 
->Note: As the last step in Terraform code is to create the Boutique Online application, it may take a few minutes to became available.
+3. Once the Terrafor has being successfully initialized in the `rke-cluster` directory, you can apply the Terraform code.
 
-Test the access to each one of the services. If it is working, you will be able to see the following:
+```sh
+terraform apply -auto-approve
+```
 
-Online Boutique:
+This apply will take less than 10 minutes to complete, in general. At the end, you should be able to see a message similar to this:
 
-![boutique](https://user-images.githubusercontent.com/104035488/170888988-a4a12bfd-dcaa-4708-bc24-aa884c3c514d.png)
+```sh
+Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
 
-Calico Portal login
+$
 
-![calico_portal](https://user-images.githubusercontent.com/104035488/170889002-6d559a39-f0df-4705-84b2-649f5df685c1.gif)
+Now you have the rke cluster installed and ready to connect to Calico Cloud. The terraform will also load the kubeconfig so you can kubectl to your cluster right away.
+Try the following:
 
-Kibana
+<rke cluster gif>
 
-![kibana](https://user-images.githubusercontent.com/104035488/170889006-cb13e757-7ac0-4159-b768-30ed6bc33fe1.gif)
+```sh
+kubectl get nodes
+```
 
-Congratulations! You have everything in place to start testing the Calico's Enterprise features.
+You should see an output like:
+
+```sh
+$ kubectl get nodes
+NAME                                           STATUS   ROLES                      AGE   VERSION
+ip-100-0-5-27.ca-central-1.compute.internal    Ready    worker                     25m   v1.22.10
+ip-100-0-5-7.ca-central-1.compute.internal     Ready    worker                     25m   v1.22.10
+ip-100-0-7-167.ca-central-1.compute.internal   Ready    controlplane,etcd,worker   28m   v1.22.10
+$
+```
+
+The next step would be to install an exemple application, the Online Boutique.
+
+
+### Installing the Online Boutique application
+
+Online Boutique is a cloud-native microservices demo application. Online Boutique consists of an 11-tier microservices application. The application is a web-based e-commerce app where users can browse items, add them to the cart, and purchase them.
+
+1. Start by cloning the repository.
+
+```sh
+cd ..
+git clone https://github.com/GoogleCloudPlatform/microservices-demo.git
+cd microservices-demo
+```
+
+2. Deploy the sample app to the RKE cluster.
+
+```sh
+kubectl apply -f ./release/kubernetes-manifests.yaml
+```
+
+3. Wait for the Pods to be ready.
+
+```sh
+kubectl get pods
+``` 
+
+4. After a few minutes, you should see:
+
+```sh
+NAME                                     READY   STATUS    RESTARTS   AGE
+adservice-694f4ff98-n6b46                1/1     Running   0          74s
+cartservice-85f8bc44fd-gtvjl             1/1     Running   0          75s
+checkoutservice-8fc47bbbd-ptjjs          1/1     Running   0          76s
+currencyservice-597bdf576b-zvknb         1/1     Running   0          74s
+emailservice-d5c6f74dd-kh48c             1/1     Running   0          77s
+frontend-7ffbf49884-bq9kl                1/1     Running   0          76s
+loadgenerator-65779994db-5xdrm           1/1     Running   0          75s
+paymentservice-76b9c8b87d-xq4mq          1/1     Running   0          75s
+productcatalogservice-6969d4f5fd-92tk6   1/1     Running   0          75s
+recommendationservice-58798d5c8-zkt5t    1/1     Running   0          76s
+redis-cart-6f65887b5d-xlrl6              1/1     Running   0          74s
+shippingservice-ff5f4d7d-gp6lg           1/1     Running   0          74s
+```
+
+5. Access the web frontend in a browser using the frontend's EXTERNAL_IP.
+
+```sh 
+kubectl get service frontend-external | awk '{print $4}'
+```
+
+Example output - do not copy
+
+```text
+EXTERNAL-IP
+a2179342230294b15b2ab7a2e15ace8d-1437444666.ca-central-1.elb.amazonaws.com
+```
+
+Note- you may see <pending> while Rancher provisions the load balancer on AWS. If this happens, wait a few minutes and re-run the command.
+Even after the loadbalancer is assigned it may take a few minutes to the traffic starts to be redirected to the frontend service on the RKE.
+
+### Connecting your cluster to Calico Cloud.
+
+For connecting your cluster to Calico Cloud, sign up for a trial by accessing https://www.calicocloud.io/home and follow the instructions.
+
+---
 
 ## Housekeeping
 
-Once you are done with the trial, you can delete the whole environment using the following commnad:
+In order to clean up, follow the reverse order.
 
-```bash
-terraform  destroy -auto-approve
-```
+- Delete the Online Shop
+- Destroy the RKE Cluster
+- Destroy the Rancher server
+- Destroy the AWS infrastructure.
 
----
+Note- due to some issues with Rancher provisioning API used to create the AWS resources for the RKE cluster, when destroying the AWS infrastructure the VPC destruction may get stuck. If it is too long, use the AWS console to check if the security group created for the frontend loadbalancer still existing. If so, delete it manually and the VPC destruction may resume successfully.
 
-## Customizing your deployment
 
-There are a few parameters that are tied to variables and can be easly configured:
-
-### prefix
-
-The prefix is used on you Resource Group and AKS cluster nomenclature. 
-
-```terraform
-variable "prefix" {
-  type    = string
-  default = "ce-aks-tf"
-}
-```
-You can customize it when running the terraform apply:
-
-```bash
-terraform apply -var="prefix=<your_custom_prefix>"
-```
-
-### location
-
-In the same way, you can choose to deploy your cluster in a different region than East US (default).
-
-```terraform
-variable "location" {
-  type    = string
-  default = "East US"
-}
-```
-
-A list of the available regions variable values can be found [here](https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#azure-regions-with-availability-zones).
-
-```bash
-terraform apply -var="location=<your_custom_location>"
-```
-
-### vm-size
-
-Also, if you will, you can select another vm size for the nodes in the cluster. The default vm size is the Standard_D11_v2, which attends the [minimun requirements](https://docs.tigera.io/getting-started/kubernetes/requirements#network-requirements) for the nodes.  
-
-```terraform
-variable "vm-size" {
-  type    = string
-  default = "Standard_D11_v2"
-```
-
-A list of all available vm sizes can be found [here](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes).
-
-```bash
-terraform apply -var="vm-size=<your_custom_vm_size>"
-```
-
----
-
-[⬆️ Back to the top](https://github.com/regismartins/ce-aks-tf) 
+[⬆️ Back to the top](https://github.com/regismartins/cc-rancher-ec2-tf-stack/blob/main/README.md#calico-cloud-trial-on-rancher-using-terraform-on-aws)
 
 ---
 
