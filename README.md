@@ -487,7 +487,7 @@ Note- due to some issues with Rancher provisioning API used to create the AWS re
 [terraform.io-badge]: https://img.shields.io/badge/Powered%20by-Terraform-purple
 [terraform.io]: https://www.terraform.io
 [terraform-badge]: https://img.shields.io/badge/-Terraform-7b3fc4?style=?style=flat-square&logo=terraform&logoColor=white
-[aws-badge]: https://img.shields.io/badge/-AWS-257bc2?style=?style=flat-square&logo=amazon&logoColor=white
+[aws-badge]: https://img.shields.io/badge/-AWS-257bc2?style=?style=flat-square&logo=amazonaws&logoColor=white
 [aws.link]: https://aws.amazon.com/
 
 
