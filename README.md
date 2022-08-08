@@ -9,15 +9,13 @@
 export now=$(date); terraform destroy -auto-approve; echo $now; date
 
 aws-infra - ~ 5min
-rancher-server - ~ 7min
+rancher-server - ~ 6min
 rke-cluster - ~ 9min
 export TF_VAR_aws_access_key_id=<aws_access_key_id>
 export TF_VAR_aws_secret_access_key=<aws_secret_access_key>
 
 
-
-
-online boutique - ~ 
+online boutique - ~ 5min
 
 https://github.com/GoogleCloudPlatform/microservices-demo
 
@@ -25,103 +23,97 @@ git clone https://github.com/GoogleCloudPlatform/microservices-demo.git
 cd microservices-demo
 kubectl apply -f ./release/kubernetes-manifests.yaml
 
+calico cloud - ~ 13 min
 
-calico cloud - ~
-# Calico Cloud Trial Environment on Rancher using Terraform 
 
-This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial environment. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through the Rancher server on AWS using EC2 instances. Here you can also find the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application and connecting your cluster to Calico Cloud.
+total - ~ 35min
+
+
+
+# Calico Cloud Trial on Rancher using Terraform on AWS.
+
+This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through a Rancher server on AWS using EC2 instances. Also, you can find here the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application, and connecting your cluster to Calico Cloud.
 
 ## The Terraform Code
 
-This section will guide you through the initial steps of setting up the needed environment for a Calico Cloud demo using Rancher on AWS EC2 instances.
+This section will guide you through the initial steps of setting up a RKE cluster using Rancher on AWS EC2 instances.
 The Terraform code presented here consists of a stack with 3 layers:
  
 - AWS Infrastructure
 - Rancher Server
 - RKE Cluster
 
-Each layer has the Terraform code for a specific task and is built on the previous layer. This layer segmentation will help if you want partially destroy the infrastructure later on. Th
-
-will build the following infrastructure:
-
-- Create a Resource Group in Azure
-- Create a AKS cluster with 3 nodes in the Resource Group
-- Deploy and configure Calico Enterprise
-- Deploy the Online Boutique application
-- Create an output file with the needed information to access the environment
+Each layer has a Terraform code for a specific task and it is built on the top of the previous layer. This layer segmentation will help if you want partially destroy the infrastructure later on.
 
 ## Pre-requisites
 
-To sucessfully deploy the Calico Enterprise product, you will need to provide the Terraform code with two important informations:
-- The pull secret
-- The license
-
-For pulling images directly from `quay.io/tigera`, you will need to use the apropriate credentials License for the Calico Enterprise will be needed as well. If you don't have your credential and license yet, check [here](https://docs.tigera.io/getting-started/calico-enterprise) how to Get a license  or [contact us](https://www.tigera.io/contact/). Both files (credential and license) have to be stored in the tigera-secrets directory. Use the following names for each file:
-
-- `config.json` (for the pull secret)
-- `license.yaml` (for the license yaml)
- 
-```bash
-mkdir tigera-secrets
-cd tigera-secrets
-vi config.json    # insert your pull secret in this file
-vi license.yaml   # insert your license in this file
-cd ..
-```
-
-Once you have the directory created and both files on it, you are ready to move to the next step.
-
 >The following applications should be installed on your computer:
 >- git
->- azure cli
+>- aws cli
 >- terraform 
 >- kubectl
 >- k9s (optionally)
 
 ## Using Terraform to build the infrastucture
 
-The Terraform code presented here will create the infrastructure to demonstrate the Calico Enterprise product. This module will explain how to run the Terraform code and what are the expected results:
+This section will explain how to run the Terraform code and what are the expected results:
 
-1. Make sure that you created the `tigera-secrets` folder with the `config.json` and `license.yaml` files, as described in the [Pre-requisites](/README.md#pre-requisites) section.
-By now, your working directory should look like the following:
-```bash
-$ tree
-.
-└── tigera-secrets
-    ├── config.json
-    └── license.yaml
-$
-```
-
-> ❗️ Another importante pre-requisite is to have your Azure cli logged in the Azure account where you want to deploy the infrastructure.
->     
-> ```bash
-> az login
-> ```
-
-
-2. The next step is to clone this git repository:
+1. The next step is to clone this git repository:
 
 ```bash
-git clone https://github.com/tigera-solutions/ce-aks-tf.git
+git clone https://github.com/regismartins/cc-rancher-ec2-tf-stack.git
 ```
 After cloning the repository, your working directory will look like the following:
 
 ```bash
-$ tree
-.
-├── ce-ob-aks-tf
-│   ├── README.md
-│   ├── application.tf
-│   ├── main.tf
+cc-rancher-ec2-tf-stack
+├── README.md
+├── aws-infra
+│   ├── aws_infra.tf
+│   ├── data.tf
 │   ├── outputs.tf
-│   ├── terraform.tf
-│   ├── tigera.tf
+│   └── terraform.tf
+├── common
+│   ├── output.tf
 │   └── variables.tf
-└── tigera-secrets
-    ├── config.json
-    └── license.yaml
+├── rancher-server
+│   ├── bootstrap.tf
+│   ├── data.tf
+│   ├── helm.tf
+│   ├── k3s.tf
+│   ├── output.tf
+│   └── terraform.tf
+└── rke-cluster
+    ├── data.tf
+    ├── output.tf
+    ├── rke.tf
+    ├── terraform.tf
+    └── variables.tf
 ```
+
+2. The variable to be used accross all layers are in the the `variables.tf` in the `common` folder. They are loaded as a module.
+the first step is costumize the variables for your environment.
+The following table describes the variables:
+
+| variable | Description | default value |
+| --- | --- | --- |
+| owner | Name to be used in the Owner tag of the AWS resources | Regis Martins |
+| prefix | The prefix will precede all the resources to be created for easy identification | regis |
+| aws_region | AWS region to be used in the deployment | ca-central-1 |
+| aws_az | AWS availability zone to be used in the deployment | b |
+| vpc_cidr | VPC CIDR for the EC2 instances | 100.0.0.0/16 |
+| instance_type | Instance type used for Rancher server EC2 instance | t3a.medium |
+| hosted_zone | The hosted zone domain to be used for the Rancher server | tigera.rocks |
+| domain_prefix |Domain prefix of the Rancher server. https://domain_prefix.hosted_zone (ie: https://rancher.tigera.rocks) | rancher |
+| rancher_kubernetes_version | Kubernetes version to use for Rancher server cluster | v1.22.9+k3s1 |
+| cert_manager_version | Version of cert-manager to install alongside Rancher (format: 0.0.0) | 1.7.1 |
+| rancher_version | Rancher server version (format: v0.0.0) | 2.6.5 |
+| admin_password | Password to be defined for the admin user by the bootstrap (12 char. minimum) | rancherpassword |
+| workload_kubernetes_version | Kubernetes version to use for managed RKE cluster | v1.22.10-rancher1-1 | 
+| rancher_cluster_name | Prefix for the RKE cluster| rke |
+| aws_access_key_id | export TF_VAR_aws_access_key_id = <ACCESS_KEY> for the Rancher server to provision the RKE cluster | "" |
+| aws_secret_access_key | export TF_VAR_aws_secret_access_key = <SECRET_KEY> for the Rancher server to provision the RKE cluster | "" |
+
 
 3. Lets now initiate the Terraform in the `ce-aks-tf` directory.
 
