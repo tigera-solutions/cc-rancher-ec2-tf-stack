@@ -3,7 +3,7 @@
 
 
 
-[![Tigera][tigera.io-badge]][tigera.io] [![Azure][azure-badge]][azure.link] [![Terraform][terraform-badge]][terraform.io]
+[![Tigera][tigera.io-badge]][tigera.io] [![AWS][aws-badge]][aws.link] [![Terraform][terraform-badge]][terraform.io]
 
 
 export now=$(date); terraform destroy -auto-approve; echo $now; date
@@ -34,6 +34,7 @@ total - ~ 35min
 
 This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through a Rancher server on AWS using EC2 instances. Also, you can find here the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application, and connecting your cluster to Calico Cloud.
 
+
 ## The Terraform Code
 
 This section will guide you through the initial steps of setting up a RKE cluster using Rancher on AWS EC2 instances.
@@ -45,6 +46,7 @@ The Terraform code presented here consists of a stack with 3 layers:
 
 Each layer has a Terraform code for a specific task and it is built on the top of the previous layer. This layer segmentation will help if you want partially destroy the infrastructure later on.
 
+
 ## Pre-requisites
 
 >The following applications should be installed on your computer:
@@ -53,6 +55,7 @@ Each layer has a Terraform code for a specific task and it is built on the top o
 >- terraform 
 >- kubectl
 >- k9s (optionally)
+
 
 ## Using Terraform to build the infrastucture
 
@@ -116,6 +119,10 @@ The following table describes the variables:
 
 
 After reviewing and customizing the variables, let's start applying the Terraform code beggining with the aws-infra, which will build the infrastructure on AWS.
+
+
+---
+
 
 ### AWS Infrastructure (aws-infra)
 
@@ -223,6 +230,9 @@ You can change or add more tags by editing the `terraform.tf` file in the `aws-i
 
 For the next step, let's apply the Terraform code to build a Rancher server using the AWS infrastructure deployed here.
 
+---
+
+
 ### Rancher Server (rancher-server)
 
 This piece of Terraform code will install a Kubernetes K3s cluster in the EC2  instance previously deployed and use Helm charts to install the Certificate Manager (https://artifacthub.io/packages/helm/cert-manager/cert-manager) and the Rancher server itself. The final step is to bootstrap the Rancher server, changing the admin password to the value of the variable `admin_password` speficied in the `variable.tf` file in the `common` folder.
@@ -309,9 +319,14 @@ The username to log in is `admin` and the password is the one you speficied in t
 
 Ok. Now the last layer, RKE cluster creation.
 
+
+---
+
+
 ### RKE Cluster (rke-cluster)
 
 This layer will use Terraform to provision a "Calico Cloud-ready" RKE cluster in Rancher, so Rancher will use AWS APIs to create EC2 instances for the nodes and install RKE on them. 
+
 
 1. Change to the `rke-cluster` folder.
 
@@ -370,7 +385,14 @@ commands will detect it and remind you to do so if necessary.
 $
 ```
 
-3. Once the Terrafor has being successfully initialized in the `rke-cluster` directory, you can apply the Terraform code.
+3. This Terraform code uses the AWS credentials from the environments so, you will need to export the access key and the secret access for your AWS account, as follow:
+
+```sh
+export TF_VAR_aws_access_key_id=<aws_access_key_id>
+export TF_VAR_aws_secret_access_key=<aws_secret_access_key>
+```
+
+4. Once the Terrafor has being successfully initialized in the `rke-cluster` directory, and the credentials were loaded, you can apply the Terraform code.
 
 ```sh
 terraform apply -auto-approve
@@ -406,6 +428,7 @@ $
 
 The next step would be to install an exemple application, the Online Boutique.
 
+---
 
 ### Installing the Online Boutique application
 
