@@ -212,13 +212,124 @@ vpc_id = "vpc-06e23cbacb3622e0d"
 $
 ```
 
-Next, you can connect to the AWS console and check the resources that were created, if you will. They will have a prefix as you configured in the `variables.tf` file, in the common folder. Also, the following tags were included to all resources:
+After all the resources has being successfully created, you can connect to the AWS console and check the resources that were created, if you will. They will have a prefix as you configured in the `variables.tf` file, in the common folder. Also, the following tags were included in all resources:
 
 ```text
 Environment = "rancher-workshop"
-Owner       = module.common.owner
+Owner       = <owner_variable>
 Terraform   = "true"
 ```
+
+You can change or add more tags by editing the `terraform.tf` file in the `aws-infra` folder.
+
+For the next step, let's apply the Terraform code to build a Rancher server using the AWS infrastructure deployed here.
+
+### Rancher Server (rancher-server)
+
+This piece of Terraform code will install a Kubernetes K3s cluster in the EC2  instance previously deployed and use Helm charts to install the Certificate Manager (https://artifacthub.io/packages/helm/cert-manager/cert-manager) and the Rancher server itself. The final step is to bootstrap the Rancher server, changing the admin password to the value of the variable `admin_password` speficied in the `variable.tf` file in the `common` folder.
+
+1. Change to the `aws-infra` folder.
+
+```sh
+cd ../rancher-server
+```
+
+2. Lets now initiate the Terraform in the `rancher-server` directory.
+
+```sh
+terraform init
+```
+
+The output should be something like the bellow
+```sh
+$ terraform init
+
+Initializing modules...
+- common in ../common
+
+Initializing the backend...
+
+Initializing provider plugins...
+- terraform.io/builtin/terraform is built in to Terraform
+- Finding hashicorp/helm versions matching "2.5.1"...
+- Finding rancher/rancher2 versions matching "1.24.0"...
+- Finding hashicorp/local versions matching "2.2.3"...
+- Finding loafoe/ssh versions matching "2.0.1"...
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+- Installing loafoe/ssh v2.0.1...
+- Installed loafoe/ssh v2.0.1 (self-signed, key ID C0E4EB79E9E6A23D)
+- Installing hashicorp/helm v2.5.1...
+- Installed hashicorp/helm v2.5.1 (signed by HashiCorp)
+- Installing rancher/rancher2 v1.24.0...
+- Installed rancher/rancher2 v1.24.0 (signed by a HashiCorp partner, key ID 2EEB0F9AD44A135C)
+
+Partner and community providers are signed by their developers.
+If you'd like to know more about provider signing, you can read about it here:
+https://www.terraform.io/docs/cli/plugins/signing.html
+
+Terraform has created a lock file .terraform.lock.hcl to record the provider
+selections it made above. Include this file in your version control repository
+so that Terraform can guarantee to make the same selections by default when
+you run "terraform init" in the future.
+
+Terraform has been successfully initialized!
+
+You may now begin working with Terraform. Try running "terraform plan" to see
+any changes that are required for your infrastructure. All Terraform commands
+should now work.
+
+If you ever set or change modules or backend configuration for Terraform,
+rerun this command to reinitialize your working directory. If you forget, other
+commands will detect it and remind you to do so if necessary.
+$
+```
+
+3. Once the Terrafor has being successfully initialized in the `aws-infra` directory, you can apply the Terraform code.
+
+```sh
+terraform apply -auto-approve
+```
+
+Great! Now you just need to wait until Terraform finishes the infrastructure creation process. This process may take about 5 minutes, on average.
+At the end, the outputs will be like:
+
+You don't need to remember them. They will be referred by the next modules.
+
+Apply complete! Resources: 22 added, 0 changed, 0 destroyed.
+
+```sh
+Outputs:
+
+aws_iam_profile_name = "regis-rancher-profile"
+aws_security_group = "regis-rancher-allow-all"
+aws_subnet_id = "subnet-035c3d2350d89c030"
+private_key = <sensitive>
+rancher_server_private_ip = "100.0.14.233"
+rancher_server_public_ip = "35.183.125.29"
+rancher_url = "rancher.tigera.rocks"
+vpc_id = "vpc-06e23cbacb3622e0d"
+
+$
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 5. During the creation process, once Terraform finishes to create the AKS cluster, you can use [k9s](https://k9scli.io/) to monitor the pods creation during the Calico Enterprise installation
 
