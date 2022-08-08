@@ -1,4 +1,4 @@
-![ce-aks-tf](https://user-images.githubusercontent.com/104035488/175662346-237812d3-e248-43c8-9ac4-555b7c9fdc28.png)
+![cc-rancher-ec2-tf-stack](https://user-images.githubusercontent.com/104035488/183498468-7280f71a-7a83-413b-929b-a030ad6a075d.png)
 
 # Calico Cloud Trial on Rancher using Terraform on AWS.
 
