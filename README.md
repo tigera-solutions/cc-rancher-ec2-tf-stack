@@ -91,11 +91,11 @@ cc-rancher-ec2-tf-stack
     └── variables.tf
 ```
 
-2. The variable to be used accross all layers are in the the `variables.tf` in the `common` folder. They are loaded as a module.
-the first step is costumize the variables for your environment.
+2. The variables to be used across all layers are in the the `variables.tf` in the `common` folder. They are loaded as a module.
+The first step is to customize the variables for your environment.
 The following table describes the variables:
 
-| variable | Description | default value |
+| Variable | Description | Default Value |
 | --- | --- | --- |
 | owner | Name to be used in the Owner tag of the AWS resources | Regis Martins |
 | prefix | The prefix will precede all the resources to be created for easy identification | regis |
@@ -115,7 +115,31 @@ The following table describes the variables:
 | aws_secret_access_key | export TF_VAR_aws_secret_access_key = <SECRET_KEY> for the Rancher server to provision the RKE cluster | "" |
 
 
-3. Lets now initiate the Terraform in the `ce-aks-tf` directory.
+After reviewing and customizing the variables, let's start applying the Terraform code beggining with the aws-infra, which will build the infrastructure on AWS.
+
+### AWS Infrastructure (aws-infra)
+
+The following elements will be created on AWS for the Rancher server installation:
+
+- VPC
+- Subnet
+- Internet Gateway
+- Default route
+- Security Group
+- TLS keys
+- EC2 Instance
+- Load Balancer
+- Hosted Zone Record
+- Certificate
+- IAM role and policy
+
+1. Change to the `aws-infra` folder.
+
+```sh
+cd ./cc-rancher-ec2-tf-stack/aws-infra
+```
+
+2. Lets now initiate the Terraform in the `aws-infra` directory.
 
 ```sh
 terraform init
@@ -125,18 +149,21 @@ The output should be something like the bellow
 ```sh
 $ terraform init
 
+Initializing modules...
+- common in ../common
+
 Initializing the backend...
 
 Initializing provider plugins...
-- Finding hashicorp/azurerm versions matching "3.4.0"...
-- Finding hashicorp/kubernetes versions matching "2.11.0"...
-- Finding hashicorp/null versions matching "3.1.1"...
-- Installing hashicorp/kubernetes v2.11.0...
-- Installed hashicorp/kubernetes v2.11.0 (signed by HashiCorp)
-- Installing hashicorp/null v3.1.1...
-- Installed hashicorp/null v3.1.1 (signed by HashiCorp)
-- Installing hashicorp/azurerm v3.4.0...
-- Installed hashicorp/azurerm v3.4.0 (signed by HashiCorp)
+- Finding hashicorp/aws versions matching "4.18.0"...
+- Finding hashicorp/local versions matching "2.2.3"...
+- Finding hashicorp/tls versions matching "3.4.0"...
+- Installing hashicorp/aws v4.18.0...
+- Installed hashicorp/aws v4.18.0 (signed by HashiCorp)
+- Installing hashicorp/local v2.2.3...
+- Installed hashicorp/local v2.2.3 (signed by HashiCorp)
+- Installing hashicorp/tls v3.4.0...
+- Installed hashicorp/tls v3.4.0 (signed by HashiCorp)
 
 Terraform has created a lock file .terraform.lock.hcl to record the provider
 selections it made above. Include this file in your version control repository
@@ -155,20 +182,41 @@ commands will detect it and remind you to do so if necessary.
 $
 ```
 
-4. Once the Terrafor has being successfully `ce-aks-tf` directory, you can apply the Terraform code.
+3. Once the Terrafor has being successfully initialized in the `aws-infra` directory, you can apply the Terraform code.
 
 ```sh
 terraform apply -auto-approve
 ```
 
-Terraform will prompt asking for the `owner-name`. This variable will be used to prefix all the resources to be created in Azure, so make sure that you use a ease-to-identity value for this variable. e.g. your first name.
+Great! Now you just need to wait until Terraform finishes the infrastructure creation process. This process may take about 5 minutes, on average.
+At the end, the outputs will be like:
+
+You don't need to remember them. They will be referred by the next modules.
+
+Apply complete! Resources: 22 added, 0 changed, 0 destroyed.
 
 ```sh
-$ terraform apply -auto-approve
-var.owner-name
-  Enter a value: regis
+Outputs:
+
+aws_iam_profile_name = "regis-rancher-profile"
+aws_security_group = "regis-rancher-allow-all"
+aws_subnet_id = "subnet-035c3d2350d89c030"
+private_key = <sensitive>
+rancher_server_private_ip = "100.0.14.233"
+rancher_server_public_ip = "35.183.125.29"
+rancher_url = "rancher.tigera.rocks"
+vpc_id = "vpc-06e23cbacb3622e0d"
+
+$
 ```
-Great! Now you just need to wait until Terraform finishes the infrastructure creation process.
+
+Next, you can connect to the AWS console and check the resources that were created, if you will. They will have a prefix as you configured in the `variables.tf` file, in the common folder. Also, the following tags were included to all resources:
+
+```text
+Environment = "rancher-workshop"
+Owner       = module.common.owner
+Terraform   = "true"
+```
 
 5. During the creation process, once Terraform finishes to create the AKS cluster, you can use [k9s](https://k9scli.io/) to monitor the pods creation during the Calico Enterprise installation
 
