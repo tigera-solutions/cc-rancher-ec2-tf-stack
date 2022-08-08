@@ -2,7 +2,7 @@
 
 # Calico Cloud Trial on Rancher using Terraform on AWS.
 
-[![Tigera][tigera.io-badge]][tigera.io] [![Amazon Web Services][aws-badge]][aws.link] [![Terraform][terraform-badge]][terraform.io] [![Rancher][rancher-badge]][racher.link]
+[![Tigera][tigera.io-badge]][tigera.io] [![Amazon Web Services][aws-badge]][aws.link] [![Terraform][terraform-badge]][terraform.io] [![Rancher][rancher-badge]][rancher.link]
 
 This repository was built to speed up the process of creating a Rancher server and a RKE cluster for Calico Cloud trial. It provides the steps to create a RKE (Rancher Kubernetes Engine) cluster through a Rancher server on AWS using EC2 instances. Also, you can find here the steps for deploying the [Online Boutique](https://github.com/GoogleCloudPlatform/microservices-demo) as an example application, and connecting your cluster to Calico Cloud.
 
