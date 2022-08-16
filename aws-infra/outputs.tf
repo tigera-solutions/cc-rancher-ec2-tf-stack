@@ -7,7 +7,7 @@ output "vpc_id" {
 }
 
 output "rancher_server_public_ip" {
-  value = aws_instance.rancher_server.public_ip
+  value = aws_eip.rancher_public_ip.public_ip
 }
 
 output "rancher_server_private_ip" {

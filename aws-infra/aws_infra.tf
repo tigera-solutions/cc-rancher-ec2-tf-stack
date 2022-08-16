@@ -92,6 +92,24 @@ resource "aws_key_pair" "rancher_key_pair" {
 }
 
 ###############################################################################
+# Elastic IP for Rancher Server
+###############################################################################
+
+resource "aws_eip" "rancher_public_ip" {
+  depends_on    = [aws_internet_gateway.internet_gateway]
+
+  vpc = true
+
+  instance                  = aws_instance.rancher_server.id
+  associate_with_private_ip = "100.0.0.100"
+
+  tags = {
+    Name = "${module.common.prefix}-${module.common.domain_prefix}-elastic-ip"
+  }
+}
+
+
+###############################################################################
 # EC2 Instance for the Rancher Server
 ###############################################################################
 
@@ -101,6 +119,7 @@ resource "aws_instance" "rancher_server" {
   ami           = data.aws_ami.sles.id
   instance_type = module.common.instance_type
   subnet_id     = aws_subnet.public_subnet.id
+  private_ip    = "100.0.0.100"
 
   key_name               = aws_key_pair.rancher_key_pair.key_name
   vpc_security_group_ids = [aws_security_group.rancher_sg_allow_all.id]
