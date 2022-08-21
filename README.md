@@ -264,6 +264,11 @@ rerun this command to reinitialize your working directory. If you forget, other
 commands will detect it and remind you to do so if necessary.
 $
 ```
+If you will, you can optionaly set an environment variable to be used as the password by the bootstrap process. If this variable is not set, the variable configured in the common module will be used. This is optional
+
+```sh
+export TF_VAR_admin_password=<admin_password>
+```
 
 3. Once the Terrafor has being successfully initialized in the `rancher-server` directory, you can apply the Terraform code.
 
