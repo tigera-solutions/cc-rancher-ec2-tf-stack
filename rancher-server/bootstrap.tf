@@ -21,7 +21,7 @@ resource "ssh_resource" "test_rancher" {
 variable admin_password {
   type      = string
   default   = ""
-  description = "Using a password defined as an environment paramenter"
+  description = "Using a password defined as an environment paramenter, if available"
   sensitive = true
 }
 
