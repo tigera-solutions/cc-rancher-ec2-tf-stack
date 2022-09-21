@@ -415,8 +415,6 @@ The way this layer was built allows you to launch more RKE clusters using the `t
 
    ```bash
    terraform workspace list
-     default
-   * development
    ```
 
    > Ouput:
@@ -435,7 +433,7 @@ The way this layer was built allows you to launch more RKE clusters using the `t
 
 4. A new RKE cluster will be created.
 
-
+![image](https://user-images.githubusercontent.com/104035488/191606926-89f37b31-fd22-43ec-ab82-f5fc60c4991f.png)
 
 You can repeat this process as much as you want, creating new workspaces and new values for the `cluster_name` variable.
 
