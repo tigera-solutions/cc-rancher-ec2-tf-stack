@@ -4,7 +4,7 @@
 
 # RKE Cluster
 resource "rancher2_cluster" "rke_cluster" {
-  name                      = "${module.common.rancher_cluster_name}-master-cluster"
+  name = "${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}-cluster"
   enable_cluster_monitoring = false
   enable_cluster_alerting   = false
   description               = "RKE Cluster"
@@ -45,7 +45,7 @@ resource "rancher2_cloud_credential" "cloud_credentials" {
 
 # Node template for the nodes in the cluster
 resource "rancher2_node_template" "rke_node_template" {
-  name                = "${module.common.rancher_cluster_name}_node_template"
+  name = "${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}_node_template"
   description         = "EC2 RKE-node Template"
   cloud_credential_id = rancher2_cloud_credential.cloud_credentials.id
   engine_install_url  = "https://releases.rancher.com/install-docker/20.10.sh"
@@ -66,8 +66,8 @@ resource "rancher2_node_template" "rke_node_template" {
 resource "rancher2_node_pool" "rke_master" {
   depends_on       = [rancher2_node_template.rke_node_template]
   cluster_id       = rancher2_cluster.rke_cluster.id
-  name             = "${module.common.prefix}-${module.common.rancher_cluster_name}-master"
-  hostname_prefix  = "${module.common.prefix}-${module.common.rancher_cluster_name}-master"
+  name             = "${module.common.prefix}-${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}-master"
+  hostname_prefix  = "${module.common.prefix}-${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}-master"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 1
   control_plane    = true
@@ -79,8 +79,8 @@ resource "rancher2_node_pool" "rke_master" {
 resource "rancher2_node_pool" "rke_node" {
   depends_on       = [rancher2_node_pool.rke_master]
   cluster_id       = rancher2_cluster.rke_cluster.id
-  name             = "${module.common.prefix}-${module.common.rancher_cluster_name}-node"
-  hostname_prefix  = "${module.common.prefix}-${module.common.rancher_cluster_name}-node"
+  name             = "${module.common.prefix}-${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}-node"
+  hostname_prefix  = "${module.common.prefix}-${var.cluster_name != "" ? var.cluster_name : module.common.rancher_cluster_name}-node"
   node_template_id = rancher2_node_template.rke_node_template.id
   quantity         = 2
   control_plane    = false

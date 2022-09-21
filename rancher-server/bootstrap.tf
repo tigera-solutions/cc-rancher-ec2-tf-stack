@@ -15,16 +15,6 @@ resource "ssh_resource" "test_rancher" {
   private_key = data.terraform_remote_state.aws_infra.outputs.private_key
 }
 
-# If this variable is present, it will override the password variable from the common module
-#  `export TF_VAR_admin_password = <password>`
-
-variable admin_password {
-  type      = string
-  default   = ""
-  description = "Using a password defined as an environment paramenter, if available"
-  sensitive = true
-}
-
 # Boostrapping the admin user with a new password
 resource "rancher2_bootstrap" "admin" {
   depends_on = [
