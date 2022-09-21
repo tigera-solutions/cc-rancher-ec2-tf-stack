@@ -403,6 +403,43 @@ ip-100-0-7-167.ca-central-1.compute.internal   Ready    controlplane,etcd,worker
 $
 ```
 
+The way this layer was built allows you to launch more RKE clusters using the `terraform workspace` resource. It is possible to change the RKE cluster name using the `cluster_name` variable in a new workspace.
+
+1. Create a new terraform workspace:
+   
+   ```bash
+   terraform workspace new development
+   ```
+
+2. Check if you are in the right workspace
+
+   ```bash
+   terraform workspace list
+     default
+   * development
+   ```
+
+   > Ouput:
+   >
+   >```bash
+   >terraform workspace list
+   >  default
+   >* development
+   >```   
+
+3. Run the `terraform apply` using a new value for the `cluster_name` variable:
+
+   ```bash
+   terraform apply -var="cluster_name=dev" -auto-approve
+   ```
+
+4. A new RKE cluster will be created.
+
+
+
+You can repeat this process as much as you want, creating new workspaces and new values for the `cluster_name` variable.
+
+
 The next step would be to install an exemple application, the Online Boutique.
 
 ---
