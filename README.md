@@ -383,11 +383,12 @@ Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
 $
 ```
 
-Now you have the rke cluster installed and ready to connect to Calico Cloud. The terraform will also load the kubeconfig so you can kubectl to your cluster right away.
-Try the following:
+Now you have the rke cluster installed and ready to connect to Calico Cloud. 
 
 ![rke-cluster](https://user-images.githubusercontent.com/104035488/183494148-828fc696-da7c-4e97-b30a-c47c1fce6299.gif)
 
+The terraform will also load the kubeconfig so you can kubectl to your cluster right away.
+Try the following:
 
 ```sh
 kubectl get nodes
